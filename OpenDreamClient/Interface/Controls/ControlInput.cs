@@ -43,6 +43,9 @@ internal sealed class ControlInput(ControlDescriptor controlDescriptor, ControlW
             case "text":
                 value = new DMFPropertyString(_textBox.Text);
                 return true;
+            case "focus":
+                value = new DMFPropertyBool(_textBox.HasKeyboardFocus());
+                return true;
             default:
                 return base.TryGetProperty(property, out value);
         }
@@ -54,6 +57,8 @@ internal sealed class ControlInput(ControlDescriptor controlDescriptor, ControlW
                 var focusValue = new DMFPropertyBool(value);
                 if (focusValue.Value)
                     _textBox.GrabKeyboardFocus();
+                else
+                    _textBox.ReleaseKeyboardFocus();
                 break;
             default:
                 base.SetProperty(property, value, manualWinset);

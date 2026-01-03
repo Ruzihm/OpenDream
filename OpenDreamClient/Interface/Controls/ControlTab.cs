@@ -1,9 +1,9 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using OpenDreamShared.Interface.Descriptors;
 using OpenDreamShared.Interface.DMF;
 using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace OpenDreamClient.Interface.Controls;
 
@@ -49,8 +49,26 @@ internal sealed class ControlTab(ControlDescriptor controlDescriptor, ControlWin
                 // The use of First() is kinda bad but hopefully this isn't large or performance critical
                 value = _tabs.First(tab => tab.UIElement == currentTab).Id;
                 return true;
+            case "focus":
+                value = new DMFPropertyBool(_tab.HasKeyboardFocus());
+                return true;
             default:
                 return base.TryGetProperty(property, out value);
+        }
+    }
+
+    public override void SetProperty(string property, string value, bool manualWinset = false) {
+        switch (property) {
+            case "focus":
+                var focusValue = new DMFPropertyBool(value);
+                if (focusValue.Value)
+                    _tab.GrabKeyboardFocus();
+                else
+                    _tab.ReleaseKeyboardFocus();
+                break;
+            default:
+                base.SetProperty(property, value, manualWinset);
+                break;
         }
     }
 }

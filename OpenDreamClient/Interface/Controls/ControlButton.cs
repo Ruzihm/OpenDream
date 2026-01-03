@@ -2,9 +2,11 @@
 using OpenDreamClient.Resources;
 using OpenDreamClient.Resources.ResourceTypes;
 using OpenDreamShared.Interface.Descriptors;
+using OpenDreamShared.Interface.DMF;
 using Robust.Client.ResourceManagement;
 using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenDreamClient.Interface.Controls;
 
@@ -72,6 +74,31 @@ internal sealed class ControlButton(ControlDescriptor controlDescriptor, Control
 
         if (!string.IsNullOrEmpty(controlDescriptor.Command.Value)) {
             _interfaceManager.RunCommand(controlDescriptor.Command.AsRaw());
+        }
+    }
+
+    public override void SetProperty(string property, string value, bool manualWinset = false) {
+        switch (property) {
+            case "focus":
+                var focusValue = new DMFPropertyBool(value);
+                if (focusValue.Value)
+                    _button.GrabKeyboardFocus();
+                else
+                    _button.ReleaseKeyboardFocus();
+                break;
+            default:
+                base.SetProperty(property, value, manualWinset);
+                break;
+        }
+    }
+
+    public override bool TryGetProperty(string property, [NotNullWhen(true)] out IDMFProperty? value) {
+        switch (property) {
+            case "focus":
+                value = new DMFPropertyBool(_button.HasKeyboardFocus());
+                return true;
+            default:
+                return base.TryGetProperty(property, out value);
         }
     }
 }

@@ -1,14 +1,14 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using OpenDreamClient.Input;
+﻿using OpenDreamClient.Input;
 using OpenDreamClient.Interface.Controls.UI;
-using OpenDreamShared.Interface.Descriptors;
-using OpenDreamShared.Interface.DMF;
 using OpenDreamClient.Rendering;
 using OpenDreamShared.Dream;
+using OpenDreamShared.Interface.Descriptors;
+using OpenDreamShared.Interface.DMF;
 using Robust.Client.Graphics;
 using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
 using Robust.Shared.Input;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenDreamClient.Interface.Controls;
 
@@ -16,6 +16,7 @@ public sealed class ControlMap(ControlDescriptor controlDescriptor, ControlWindo
     public ScalingViewport Viewport { get; private set; }
 
     [Dependency] private readonly IEntitySystemManager _entitySystemManager = default!;
+    [Dependency] private readonly IUserInterfaceManager _userInterfaceManager = default!;
     private MouseInputSystem? _mouseInput;
     private ClientAppearanceSystem? _appearanceSystem;
 
@@ -125,6 +126,11 @@ public sealed class ControlMap(ControlDescriptor controlDescriptor, ControlWindo
             case "view-size": // Size of the final viewport (resized and all) rather than the whole container
                 value = new DMFPropertyVec2(Viewport.GetDrawBox().Size);
                 return true;
+            case "focus":
+                // TODO: alternative - Viewport can't grab keyboard focus...
+                //value = new DMFPropertyBool(Viewport.HasKeyboardFocus());
+                value = new DMFPropertyBool(false);
+                return true;
             case "mouse-pos":
             case "inner-mouse-pos":
                 var mousePos = IoCManager.Resolve<IUserInterfaceManager>().MousePositionScaled.Position;
@@ -134,6 +140,24 @@ public sealed class ControlMap(ControlDescriptor controlDescriptor, ControlWindo
                 return true;
             default:
                 return base.TryGetProperty(property, out value);
+        }
+    }
+
+    public override void SetProperty(string property, string value, bool manualWinset = false) {
+        switch (property) {
+            case "focus":
+                var focusValue = new DMFPropertyBool(value);
+                if (focusValue.Value) {
+                    // Viewport can't grab keyboard focus...
+                    _userInterfaceManager.KeyboardFocused?.ReleaseKeyboardFocus();
+                } else {
+                    // TODO: alternative
+                    // Viewport.ReleaseKeyboardFocus();
+                }
+                break;
+            default:
+                base.SetProperty(property, value, manualWinset);
+                break;
         }
     }
 

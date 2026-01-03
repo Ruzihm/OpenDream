@@ -84,6 +84,9 @@ public abstract class InterfaceControl : InterfaceElement {
             case "pos":
                 value = new DMFPropertyPos(UIElement.Position);
                 return true;
+            case "focus":
+                value = new DMFPropertyBool(UIElement.HasKeyboardFocus());
+                return true;
             default:
                 return base.TryGetProperty(property, out value);
         }
@@ -116,6 +119,13 @@ public abstract class InterfaceControl : InterfaceElement {
 
                 if (manualWinset)
                     Window?.UpdateAnchorPosition(this);
+                break;
+            case "focus":
+                var focusValue = new DMFPropertyBool(value);
+                if (focusValue.Value)
+                    UIElement.GrabKeyboardFocus();
+                else
+                    UIElement.ReleaseKeyboardFocus();
                 break;
         }
 
