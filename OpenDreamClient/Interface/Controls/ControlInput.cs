@@ -22,14 +22,14 @@ internal sealed class ControlInput(ControlDescriptor controlDescriptor, ControlW
         if (InputDescriptor.NoCommand.Value)
             return;
 
+        ResetText();
+
         var command = InputDescriptor.Command.Value;
         if (command.StartsWith('!')) {
             _interfaceManager.RunCommand(lineEditEventArgs.Text);
         } else {
             _interfaceManager.RunCommand(command + lineEditEventArgs.Text);
         }
-
-        ResetText();
     }
 
     protected override void UpdateElementDescriptor() {
@@ -59,6 +59,9 @@ internal sealed class ControlInput(ControlDescriptor controlDescriptor, ControlW
                     _textBox.GrabKeyboardFocus();
                 else
                     _textBox.ReleaseKeyboardFocus();
+                break;
+            case "text":
+                _textBox.Text = value;
                 break;
             default:
                 base.SetProperty(property, value, manualWinset);
